@@ -1,12 +1,17 @@
 import torch
 import torch.utils.data
-import pandas as pd
 import os
-from PIL import Image
 import csv
-import google_drive
 import errno
+import scipy.io
+
+import numpy as np
+import pandas as pd
 import torchvision.transforms as transforms
+
+import google_drive
+
+from PIL import Image
 
 class MNIST_M(torch.utils.data.Dataset):
     """MNIST_M dataset."""
@@ -24,6 +29,9 @@ class MNIST_M(torch.utils.data.Dataset):
                 test set.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
+            download (bool, optional): If true, downloads the dataset from the internet and
+            puts it in root directory. If dataset is already downloaded, it is not
+            downloaded again.
         """
         self.root_dir = root_dir
         self.train = train
@@ -82,11 +90,100 @@ class MNIST_M(torch.utils.data.Dataset):
             print("Downloading " + self.raw_file[idx])
             file_path = os.path.join(self.root_dir, self.data_dir, self.raw_file[idx])
             google_drive.download_file_from_google_drive(self.file_id[idx], file_path)
+            
             print("Extracting " + self.raw_file[idx])
             with open(file_path.replace('.gz', ''), 'wb') as out_f, \
                     gzip.GzipFile(file_path) as zip_f:
                 out_f.write(zip_f.read())
             os.unlink(file_path)
+            
+        print("Done.")
+            
+class SYNNUM(torch.utils.data.Dataset):
+    """Synthetic numbers dataset."""
+    
+    data_dir = "synnum/"
+    file_id = "0B9Z4d7lAwbnTSVR1dEFSRUFxOUU"
+    raw_file = "SynthDigits.zip"
+
+    def __init__(self, root_dir, train=True, small=False, transform=None, download=False):
+        """
+        Args:
+            root_dir (string): Path to mnist_m directory.
+            train (bool, optional): If True, create training set, otherwise test set.
+            small (bool, optional): If True, read the small dataset, otherwise read the
+                original dataset.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+            download (bool, optional): If true, downloads the dataset from the internet and
+            puts it in root directory. If dataset is already downloaded, it is not
+            downloaded again.
+        """
+        self.root_dir = root_dir
+        
+        self.data_file = "synth"
+        if train:
+            self.data_file += "_train_32x32"
+        else:
+            self.data_file += "_test_32x32"
+        if small:
+            self.data_file += "_small"
+        self.data_file += ".mat"
+        
+        self.transform = transform
+        
+        if download:
+            self.download()
+            
+        if not self._check_exists():
+            raise RuntimeError("Dataset not found." +
+                               " You can use download=True to download it")
+            
+        mat = scipy.io.loadmat("data/synnum/synth_train_32x32.mat")
+        self.images = mat["X"]
+        self.labels = torch.LongTensor(mat["y"]).view(-1)
+
+    def __len__(self):
+        return self.labels.size()[0]
+
+    def __getitem__(self, idx):
+        image, label = self.images[:, :, :, idx], self.labels[idx]
+        
+        image = Image.fromarray(image, mode="RGB")
+
+        if self.transform is not None:
+            image = self.transform(image)
+
+        return image, label
+    
+    def _check_exists(self):
+        return os.path.exists(os.path.join(self.root_dir, self.data_dir, self.data_file))
+    
+    def download(self):
+        import zipfile
+        
+        if self._check_exists():
+            return
+
+        try:
+            os.makedirs(os.path.join(self.root_dir, self.data_dir))
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                pass
+            else:
+                raise
+        
+        print("Downloading " + self.raw_file)
+        file_path = os.path.join(self.root_dir, self.data_dir, self.raw_file)
+        google_drive.download_file_from_google_drive(self.file_id, file_path)
+        
+        print("Extracting " + self.raw_file)
+        zip_ref = zipfile.ZipFile(file_path, "r")
+        zip_ref.extractall(os.path.join(self.root_dir, self.data_dir))
+        zip_ref.close()
+        os.unlink(file_path)
+        
+        print("Done.")
 
 class ST_Dataset(torch.utils.data.Dataset):
     """Source and target dataset combination."""
