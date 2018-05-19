@@ -197,7 +197,8 @@ class ST_Dataset(torch.utils.data.Dataset):
         """
         small_len = min(len(source), len(target))
         self.length = small_len * 2
-        self.images = torch.Tensor(small_len * 2, 3, 28, 28)
+        channel, height, width = source[0][0].size()
+        self.images = torch.Tensor(small_len * 2, channel, height, width)
         self.labels = torch.LongTensor(small_len * 2)
         self.domains = torch.LongTensor(small_len * 2)
         start = 0
