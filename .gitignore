@@ -64,3 +64,7 @@ target/
 
 # Data Directory
 data/
+
+# Parameter Directory
+parameters/
+
