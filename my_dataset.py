@@ -139,7 +139,7 @@ class SYNNUM(torch.utils.data.Dataset):
             raise RuntimeError("Dataset not found." +
                                " You can use download=True to download it")
             
-        mat = scipy.io.loadmat("data/synnum/synth_train_32x32.mat")
+        mat = scipy.io.loadmat(os.path.join(self.root_dir, self.data_dir, self.data_file))
         self.images = mat["X"]
         self.labels = torch.LongTensor(mat["y"]).view(-1)
 
