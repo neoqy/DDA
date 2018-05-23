@@ -2,4 +2,4 @@
 
 ## Usage
 
-Just run the note book.
+The implementation was based on Pytorch 0.4.0
