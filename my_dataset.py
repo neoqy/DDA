@@ -142,11 +142,7 @@ class SYNNUM(torch.utils.data.Dataset):
         mat = scipy.io.loadmat(os.path.join(self.root_dir, self.data_dir, self.data_file))
         self.images = mat["X"]
         self.labels = torch.LongTensor(mat["y"]).view(-1)
-        
-        print(type(self.images))
-        print(type(self.labels))
-        print(self.images.shape)
-        print(self.labels.shape)
+
 
     def __len__(self):
         return self.labels.size()[0]
@@ -230,6 +226,8 @@ class ST_Dataset(torch.utils.data.Dataset):
         return self.images[idx], self.labels[idx], self.domains[idx]
 
     
+# download preprocessing data from synthetic sign dataset
+# https://graphics.cs.msu.ru/en/node/1337
 class SYNSIGN(torch.utils.data.Dataset):
     """Synthetic numbers dataset."""
     
@@ -267,6 +265,8 @@ class SYNSIGN(torch.utils.data.Dataset):
         import numpy as np
         
         self.images = np.load(os.path.join(self.root_dir, self.data_dir, 'synsign/img_data.npy'))
+        
+        self.images = np.transpose(self.images, (2, 0, 1, 3)).astype(float)
         self.labels = torch.LongTensor(np.load(os.path.join(self.root_dir, self.data_dir, 'synsign/label.npy')))
         self.labels = self.labels.view(-1)
 
@@ -314,8 +314,103 @@ class SYNSIGN(torch.utils.data.Dataset):
         os.unlink(file_path)
         
         print("Done.")    
+
+# download preprocessing data from german traffic signs dataset
+# http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset
+class GTSRB(torch.utils.data.Dataset):
+    """Synthetic numbers dataset."""
     
+    data_dir = "GTSRB/"
+    file_id = "18Dzw-ml5XfTJmgGujw05CnhVnYyiXDKB"
+    raw_file = "GTSRB.zip"
     
+    def __init__(self, root_dir, train=True, small=False, transform=None, download=False):
+        """
+        Args:
+            root_dir (string): Path to mnist_m directory.
+            train (bool, optional): If True, create training set, otherwise test set.
+            small (bool, optional): If True, read the small dataset, otherwise read the
+                original dataset.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+            download (bool, optional): If true, downloads the dataset from the internet and
+            puts it in root directory. If dataset is already downloaded, it is not
+            downloaded again.
+        """
+        self.root_dir = root_dir
+        
+        self.data_file = "GTSRB.zip"
+        
+        self.transform = transform
+        
+        if download:
+            self.download()
+            
+        #if not self._check_exists():
+        #    raise RuntimeError("Dataset not found." +
+        #                       " You can use download=True to download it")
+            
+        
+        import numpy as np
+        self.train = train
+        if self.train:
+            self.images = np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRB/train_img.npy'))
+            self.images = np.transpose(self.images, (2, 0, 1, 3)).astype(float)
+            self.labels = torch.LongTensor(np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRB/train_label.npy')))
+            self.labels = self.labels.view(-1)
+        else:
+            self.images = np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRB/test_img.npy'))
+            self.images = np.transpose(self.images, (2, 0, 1, 3)).astype(float)
+            self.labels = torch.LongTensor(np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRB/test_label.npy')))
+            self.labels = self.labels.view(-1)
+
+
+
+    def __len__(self):
+        return self.labels.size()[0]
+
+    def __getitem__(self, idx):
+        #print(idx)
+        image, label = self.images[:, :, :, idx], self.labels[idx]
+        
+        #image = Image.fromarray(image, mode="RGB")
+
+        #if self.transform is not None:
+        #    image = self.transform(image)
+        
+        return image, label
+    
+    def _check_exists(self):
+
+        return os.path.exists(os.path.join(self.root_dir, self.data_dir, self.data_file))
+    
+    def download(self):
+        import zipfile
+        
+        if self._check_exists():
+            return
+
+        try:
+            os.makedirs(os.path.join(self.root_dir, self.data_dir))
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                pass
+            else:
+                raise
+        
+        print("Downloading " + self.raw_file)
+        file_path = os.path.join(self.root_dir, self.data_dir, self.raw_file)
+        google_drive.download_file_from_google_drive(self.file_id, file_path)
+
+        print("Extracting " + self.raw_file)
+        zip_ref = zipfile.ZipFile(file_path, "r")
+        zip_ref.extractall(os.path.join(self.root_dir, self.data_dir))
+        zip_ref.close()
+        os.unlink(file_path)
+        
+        print("Done.")    
+        
+        
 def txt_to_csv(i, o):
     in_txt = csv.reader(open(i, "r"), delimiter = ' ')
     out_csv = csv.writer(open(o, "w"))
