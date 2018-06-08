@@ -12,7 +12,7 @@ def get_dataset_mean_and_std(directory):
         ])
     )
 
-    data_loader = data.DataLoader(dataset)
+    data_loader = data.DataLoader(dataset,num_workers=4)
 
     mean = [0, 0, 0]
     std = [0, 0, 0]

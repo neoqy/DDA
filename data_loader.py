@@ -17,13 +17,13 @@ def get_train_test_loader(case, batch_size, testing_size=0.1, img_size=None):
     means = {
         'amazon': [0.79235075407833078, 0.78620633471295642, 0.78417965306916637],
         'webcam': [0.61197983011509638, 0.61876474000372972, 0.61729662103473015],
-        'dslr': [],
+        'dslr': [0.47086456418037415, 0.4486565589904785, 0.4063783884048462],
         'imagenet': [0.485, 0.456, 0.406]
     }
     stds = {
         'amazon': [0.27691643643313618, 0.28152348841965347, 0.28287296762830788],
         'webcam': [0.22763857108616978, 0.23339382150450594, 0.23722725519031848],
-        'dslr': [],
+        'dslr': [0.24469593167304993, 0.24375207722187042, 0.23565249145030975],
         'imagenet': [0.229, 0.224, 0.225]
     }
     
@@ -84,13 +84,13 @@ def get_office31_dataloader(case, batch_size):
     means = {
         'amazon': [0.79235075407833078, 0.78620633471295642, 0.78417965306916637],
         'webcam': [0.61197983011509638, 0.61876474000372972, 0.61729662103473015],
-        'dslr': [],
+        'dslr': [0.47086456418037415, 0.4486565589904785, 0.4063783884048462],
         'imagenet': [0.485, 0.456, 0.406]
     }
     stds = {
         'amazon': [0.27691643643313618, 0.28152348841965347, 0.28287296762830788],
         'webcam': [0.22763857108616978, 0.23339382150450594, 0.23722725519031848],
-        'dslr': [],
+        'dslr': [0.24469593167304993, 0.24375207722187042, 0.23565249145030975],
         'imagenet': [0.229, 0.224, 0.225]
     }
 
@@ -99,7 +99,7 @@ def get_office31_dataloader(case, batch_size):
     transform = [
         transforms.Resize(img_size),
         transforms.ToTensor(),
-        transforms.Normalize(means['imagenet'], stds['imagenet']),
+        transforms.Normalize(means[case], stds[case]),
     ]
 
     data_loader = data.DataLoader(
@@ -110,7 +110,7 @@ def get_office31_dataloader(case, batch_size):
         num_workers=4,
         batch_size=batch_size,
         shuffle=True,
-        drop_last=True
+        drop_last=False
     )
 
     return data_loader
