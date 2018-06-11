@@ -257,9 +257,9 @@ class SYNSIGN(torch.utils.data.Dataset):
         if download:
             self.download()
             
-        if not self._check_exists():
-            raise RuntimeError("Dataset not found." +
-                               " You can use download=True to download it")
+        #if not self._check_exists():
+        #    raise RuntimeError("Dataset not found." +
+        #                       " You can use download=True to download it")
             
         
         import numpy as np
@@ -321,8 +321,8 @@ class GTSRB(torch.utils.data.Dataset):
     """Synthetic numbers dataset."""
     
     data_dir = "GTSRB/"
-    file_id = "18Dzw-ml5XfTJmgGujw05CnhVnYyiXDKB"
-    raw_file = "GTSRB.zip"
+    file_id = "1WkenB2nR7U9BzHoIxbuSWYHHh5lJZT4L"
+    raw_file = "GTSRBv2.zip"
     
     def __init__(self, root_dir, train=True, small=False, transform=None, download=False):
         """
@@ -339,7 +339,7 @@ class GTSRB(torch.utils.data.Dataset):
         """
         self.root_dir = root_dir
         
-        self.data_file = "GTSRB.zip"
+        self.data_file = "GTSRBv2.zip"
         
         self.transform = transform
         
@@ -354,14 +354,14 @@ class GTSRB(torch.utils.data.Dataset):
         import numpy as np
         self.train = train
         if self.train:
-            self.images = np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRB/train_img.npy'))
+            self.images = np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRBv2/train_imgv2.npy'))
             self.images = np.transpose(self.images, (2, 0, 1, 3)).astype(float)
-            self.labels = torch.LongTensor(np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRB/train_label.npy')))
+            self.labels = torch.LongTensor(np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRBv2/train_labelv2.npy')))
             self.labels = self.labels.view(-1)
         else:
-            self.images = np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRB/test_img.npy'))
+            self.images = np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRBv2/test_img.npy'))
             self.images = np.transpose(self.images, (2, 0, 1, 3)).astype(float)
-            self.labels = torch.LongTensor(np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRB/test_label.npy')))
+            self.labels = torch.LongTensor(np.load(os.path.join(self.root_dir, self.data_dir, 'GTSRBv2/test_label.npy')))
             self.labels = self.labels.view(-1)
 
 
